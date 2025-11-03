@@ -1,7 +1,3 @@
-"""
-Fixed IBKR API Version Issue - Geometric FX Arbitrage
-"""
-
 import time
 import threading
 import numpy as np
