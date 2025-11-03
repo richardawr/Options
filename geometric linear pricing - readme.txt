@@ -209,7 +209,6 @@ Monthly Options:
 
 Conclusions:
 The geometric approach appears to be successfully identifying statistical arbitrage opportunities. 
-
 The consistent finding of 2-5% edges across different moneyness levels suggests:
 Market Inefficiencies Exist: FX options markets have pricing discrepancies
 Can be extended to more currency pairs and expiries
