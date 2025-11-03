@@ -58,11 +58,11 @@ class IBFXTradingApp(EWrapper, EClient):
             'USDJPY': 154.18  # Using your live data point
         }
 
-        print("📋 Monitoring FX pairs:", [pair['pair'] for pair in self.fx_basket])
-        print("💡 Geometric Formula: C(P,K,T) = e^(-rT)[(P+K)*sinh(ln(P/K))/ln(P/K) - K]")
+        print("Monitoring FX pairs:", [pair['pair'] for pair in self.fx_basket])
+        print("Geometric Formula: C(P,K,T) = e^(-rT)[(P+K)*sinh(ln(P/K))/ln(P/K) - K]")
 
     def connect_to_ibkr(self, host='127.0.0.1', port=7497, client_id=1):
-        print(f"🔗 Connecting to IBKR on {host}:{port}...")
+        print(f" Connecting to IBKR on {host}:{port}...")
         self.connect(host, port, client_id)
         api_thread = threading.Thread(target=self.run, daemon=True)
         api_thread.start()
@@ -73,7 +73,7 @@ class IBFXTradingApp(EWrapper, EClient):
         super().nextValidId(orderId)
         self.next_order_id = orderId
         self.connected = True
-        print(f"✅ Connected to IBKR. Next order ID: {orderId}")
+        print(f" Connected to IBKR. Next order ID: {orderId}")
 
     def tickPrice(self, reqId, tickType, price, attrib):
         if tickType == 4:  # Last price
@@ -82,7 +82,7 @@ class IBFXTradingApp(EWrapper, EClient):
                     self.spot_prices[reqId]['price'] = price
                     self.spot_prices[reqId]['received'] = True
                     pair = self.spot_prices[reqId]['pair']
-                    print(f"   📈 {pair} Spot: {price} (LIVE)")
+                    print(f"   {pair} Spot: {price} (LIVE)")
                     self.data_received.set()
 
     def error(self, reqId, code, errorString):
@@ -90,17 +90,17 @@ class IBFXTradingApp(EWrapper, EClient):
             pair = self.spot_prices[reqId]['pair']
             if code == 10285:
                 # Fractional size error - ignore but mark as demo
-                print(f"   ⚠️  {pair}: Using demo data (API version)")
+                print(f"     {pair}: Using demo data (API version)")
                 self.spot_prices[reqId]['price'] = self.demo_spots[pair]
                 self.spot_prices[reqId]['received'] = True
                 self.spot_prices[reqId]['demo'] = True
             elif code == 200:
-                print(f"   ⚠️  {pair}: Using demo data (contract)")
+                print(f"     {pair}: Using demo data (contract)")
                 self.spot_prices[reqId]['price'] = self.demo_spots[pair]
                 self.spot_prices[reqId]['received'] = True
                 self.spot_prices[reqId]['demo'] = True
             else:
-                print(f"   ❌ {pair}: Error {code} - {errorString}")
+                print(f"    {pair}: Error {code} - {errorString}")
 
     def create_fx_contract(self, symbol, currency):
         """Create FX contract with proper settings"""
@@ -113,7 +113,7 @@ class IBFXTradingApp(EWrapper, EClient):
 
     def request_spot_prices(self):
         """Request spot prices with API version workaround"""
-        print("📊 Requesting FX spot prices...")
+        print(" Requesting FX spot prices...")
 
         for i, fx_pair in enumerate(self.fx_basket):
             contract = self.create_fx_contract(fx_pair['symbol'], fx_pair['currency'])
@@ -163,9 +163,9 @@ class IBFXTradingApp(EWrapper, EClient):
                 demo_pairs.append(fx_pair['pair'])
 
         if live_pairs:
-            print(f"   ✅ Live data: {live_pairs}")
+            print(f"    Live data: {live_pairs}")
         if demo_pairs:
-            print(f"   📊 Demo data: {demo_pairs}")
+            print(f"    Demo data: {demo_pairs}")
 
         return True  # Always continue since we have demo data
 
@@ -213,19 +213,19 @@ class IBFXTradingApp(EWrapper, EClient):
     def run_live_analysis(self):
         """Run analysis with available data"""
         print("\n" + "=" * 60)
-        print("🎯 GEOMETRIC PRICING ARBITRAGE DETECTION")
+        print("GEOMETRIC PRICING ARBITRAGE DETECTION")
         print("=" * 60)
-        print("💡 Formula: C(P,K,T) = e^(-rT)[(P+K)*sinh(ln(P/K))/ln(P/K) - K]")
+        print("Formula: C(P,K,T) = e^(-rT)[(P+K)*sinh(ln(P/K))/ln(P/K) - K]")
 
         analysis_count = 0
         while True:
             try:
                 analysis_count += 1
-                print(f"\n🔄 Analysis Round #{analysis_count} - {datetime.now().strftime('%H:%M:%S')}")
+                print(f"\n Analysis Round #{analysis_count} - {datetime.now().strftime('%H:%M:%S')}")
                 print("-" * 60)
 
                 # Display current market data
-                print("📊 Current Market Data:")
+                print(" Current Market Data:")
                 for fx_pair in self.fx_basket:
                     spot = self.get_current_spot(fx_pair['pair'])
                     data_type = "LIVE" if self.is_live_data(fx_pair['pair']) else "DEMO"
@@ -233,7 +233,7 @@ class IBFXTradingApp(EWrapper, EClient):
 
                 # Run analysis for different expiries
                 for expiry_type in ['weekly', 'monthly']:
-                    print(f"\n📊 {expiry_type.upper()} OPTIONS ANALYSIS")
+                    print(f"\n {expiry_type.upper()} OPTIONS ANALYSIS")
                     print("-" * 40)
 
                     total_opportunities = 0
@@ -277,32 +277,32 @@ class IBFXTradingApp(EWrapper, EClient):
                                 total_opportunities += 1
                                 profit = abs(theoretical_basket_usd - total_market_premium)
                                 direction = "SELL individuals, BUY basket" if edge > 0 else "BUY individuals, SELL basket"
-                                print(f"     🎯 TRADE: {direction}")
-                                print(f"     💰 Expected Profit: ${profit:,.0f} ({abs(edge):.2%})")
+                                print(f"      TRADE: {direction}")
+                                print(f"      Expected Profit: ${profit:,.0f} ({abs(edge):.2%})")
 
                     if total_opportunities > 0:
-                        print(f"\n   📈 Found {total_opportunities} trade opportunity(ies)")
+                        print(f"\n    Found {total_opportunities} trade opportunity(ies)")
                     else:
-                        print(f"   ✓ No significant arbitrage detected")
+                        print(f"    No significant arbitrage detected")
 
-                print(f"\n⏰ Next analysis in 45 seconds...")
+                print(f"\n Next analysis in 45 seconds...")
                 time.sleep(45)
 
             except KeyboardInterrupt:
-                print("\n🛑 Analysis stopped by user")
+                print("\n Analysis stopped by user")
                 break
             except Exception as e:
-                print(f"❌ Error in analysis: {e}")
+                print(f" Error in analysis: {e}")
                 import traceback
                 traceback.print_exc()
                 time.sleep(10)
 
     def run_strategy(self):
         if not self.connected:
-            print("❌ Not connected to IBKR")
+            print("Not connected to IBKR")
             return
 
-        print("🚀 Starting Geometric Pricing Arbitrage Detection...")
+        print("Starting Geometric Pricing Arbitrage Detection...")
 
         # Request market data
         self.request_spot_prices()
@@ -310,7 +310,7 @@ class IBFXTradingApp(EWrapper, EClient):
         # Wait for data (with API version workaround)
         self.wait_for_data(timeout=15)
 
-        print("✅ Data collection complete - starting analysis...")
+        print("Data collection complete - starting analysis...")
 
         # Run continuous analysis
         self.run_live_analysis()
@@ -324,15 +324,15 @@ def main():
 
         strategy_thread = threading.Thread(target=app.run_strategy, daemon=True)
         strategy_thread.start()
-        print("📈 Analysis thread started...")
+        print("Analysis thread started...")
 
         try:
             while True:
                 time.sleep(1)
         except KeyboardInterrupt:
-            print("\n🛑 Application stopped by user")
+            print("\n Application stopped by user")
     else:
-        print("❌ Failed to connect to IBKR")
+        print("Failed to connect to IBKR")
 
 
 if __name__ == "__main__":
