@@ -1,7 +1,10 @@
 The idea and its application:
 Black-Scholes framework and stochastic calculus approaches to options pricing can be replaced by a purely geometric, linear pricing model that identifies arbitrage through exact mathematical relationships between individual options and their portfolio aggregates.
 
+============================================================================================
+
 usage: ib tws localhost, port=7497
+
 ============================================================================================
 
 Advantages Over Traditional Methods:
